@@ -29,7 +29,7 @@ class Certificate:
                 f"Could not retrieve certificate for {self._hostname}: {e}"
             )
 
-    def expiry_date(self):
+    def _expiry_date(self):
         """Returns the expiry date of the certificate as a datetime object."""
 
         if self._cert is None:
@@ -50,14 +50,14 @@ class Certificate:
 
     def _days_until_expiration(self):
         """Returns the number of days until the certificate expires."""
-        expiry_date = self.expiry_date()
+        expiry_date = self._expiry_date()
         return (expiry_date - datetime.datetime.now()).days
 
     def get_expiry_status(self):
         """Returns a string indicating the expiry status of the certificate."""
         try:
             days_left = self._days_until_expiration()
-            expiry_date = self.expiry_date().strftime("%Y-%m-%d")
+            expiry_date = self._expiry_date().strftime("%Y-%m-%d")
 
             if self.is_expiring_soon():
                 return (
