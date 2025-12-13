@@ -29,7 +29,7 @@ class Certificate:
                 f"Could not retrieve certificate for {self._hostname}: {e}"
             )
 
-    def _expiry_date(self):
+    def _get_expiry_date(self):
         """Returns the expiry date of the certificate as a datetime object."""
 
         if self._cert is None:
@@ -50,31 +50,37 @@ class Certificate:
 
     def _days_until_expiration(self):
         """Returns the number of days until the certificate expires."""
-        expiry_date = self._expiry_date()
+        expiry_date = self._get_expiry_date()
         return (expiry_date - datetime.datetime.now()).days
 
     def get_expiry_status(self):
-        """Returns a string indicating the expiry status of the certificate."""
+        """Returns a dictionary with the status of the certificate.
+
+        returns
+            dict: A dictionary with the following keys:
+            - status
+            - days_left
+            - expiry_date
+            - error
+        """
         try:
             days_left = self._days_until_expiration()
-            expiry_date = self._expiry_date().strftime("%Y-%m-%d")
 
-            if self.is_expiring_soon():
-                return (
-                    f"Status: WARNING - Expires in {days_left} days (on {expiry_date})"
-                )
+            is_warning = days_left <= self._expiring_days_threshold
 
-            return f"Status: OK - Valid for {days_left} more days (expires on {expiry_date})"
+            status = "WARNING" if is_warning else "OK"
+
+            return {
+                "status": status,
+                "days_left": days_left,
+                "expiry_date": self._get_expiry_date(),
+                "error": None,
+            }
 
         except ValueError as e:
-            return f"Status: ERROR - Could not determine expiry status: {e}"
-
-    def is_expiring_soon(self):
-        """Checks if the certificate is expired or expiring within the threshold."""
-        days_threshold = self._expiring_days_threshold
-        try:
-            days_left = self._days_until_expiration()
-            return days_left <= days_threshold
-        except ValueError:
-            # If we can't determine the days left, treat it as an issue to be reported.
-            return True
+            return {
+                "status": "ERROR",
+                "days_left": None,
+                "expiry_date": None,
+                "error": str(e),
+            }
