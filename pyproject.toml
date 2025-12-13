@@ -24,3 +24,8 @@ ssl-sentinel = "ssl_sentinel.main:main"
 
 [tool.hatch.version]
 path = "src/ssl_sentinel/__about__.py"
+
+[tool.uv.workspace]
+members = [
+    "src/python/ssl-sentinel",
+]
