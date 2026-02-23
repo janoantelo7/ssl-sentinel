@@ -9,24 +9,27 @@ def process_hostname(hostname, threshold, expiring_soon=False):
         print("Error: No hostname provided.", file=sys.stderr)
         return False
 
-    try:
-        cert = Certificate(hostname, threshold)
-        certificate = cert.get_expiry_status()
+    cert = Certificate(hostname, threshold)
+    certificate = cert.get_expiry_status()
 
-        if expiring_soon and certificate["status"] != "WARNING":
-            return False
-
+    if certificate["status"] == "ERROR":
         print(f"--> Checking certificate for {hostname}")
-        date_formated = certificate["expiry_date"].strftime("%Y-%m-%d")
-        days = certificate["days_left"]
-
-        print(f"[{certificate['status']}]: Expires in {days} days on {date_formated}.")
-
+        print(
+            f"[ERROR]: error checking certificate for {hostname}: {certificate['error']}.",
+            file=sys.stderr,
+        )
         return True
-    except (ConnectionError, ValueError) as e:
-        print(f"--> Checking certificate for {hostname}")
-        print(f"[ERROR]: error checking certificate for {hostname}: {e}.", file=sys.stderr)
-        return True
+
+    if expiring_soon and certificate["status"] != "WARNING":
+        return False
+
+    print(f"--> Checking certificate for {hostname}")
+    date_formated = certificate["expiry_date"].strftime("%Y-%m-%d")
+    days = certificate["days_left"]
+
+    print(f"[{certificate['status']}]: Expires in {days} days on {date_formated}.")
+
+    return True
 
 
 def main():
