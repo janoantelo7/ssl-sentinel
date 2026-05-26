@@ -1,7 +1,9 @@
-from .certificate import Certificate
-from .__about__ import __version__
 import argparse
 import sys
+
+from .__about__ import __version__
+from .exceptions import SSLSentinelError
+from .network import fetch_certificate_status
 
 
 def process_hostname(hostname, threshold, expiring_soon=False):
@@ -10,22 +12,25 @@ def process_hostname(hostname, threshold, expiring_soon=False):
         return False
 
     try:
-        cert = Certificate(hostname, threshold)
-        certificate = cert.get_expiry_status()
+        certificate = fetch_certificate_status(hostname, threshold)
 
-        if expiring_soon and certificate["status"] != "WARNING":
+        if expiring_soon and not certificate.is_expiring_soon:
             return False
 
         print(f"--> Checking certificate for {hostname}")
-        date_formated = certificate["expiry_date"].strftime("%Y-%m-%d")
-        days = certificate["days_left"]
+        date_formated = certificate.expiry_date.strftime("%Y-%m-%d")
+        days = certificate.days_left
 
-        print(f"[{certificate['status']}]: Expires in {days} days on {date_formated}.")
+        print(
+            f"[{certificate.status_label}]: Expires in {days} days on {date_formated}"
+        )
 
         return True
-    except (ConnectionError, ValueError) as e:
+    except SSLSentinelError as e:
         print(f"--> Checking certificate for {hostname}")
-        print(f"[ERROR]: error checking certificate for {hostname}: {e}.", file=sys.stderr)
+        print(
+            f"[ERROR]: error checking certificate for {hostname}: {e}.", file=sys.stderr
+        )
         return True
 
 
