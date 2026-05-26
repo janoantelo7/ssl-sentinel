@@ -5,12 +5,12 @@ class SSLSentinelError(Exception):
 
 
 class CertificateFetchError(SSLSentinelError):
-    """Raised when it can't connect with the server or socket."""
+    """Raised when a connection to the server or socket cannot be established."""
 
     pass
 
 
 class CertificateParseError(SSLSentinelError):
-    """Raised when the responde is not valid."""
+    """Raised when the server response is not valid or cannot be parsed."""
 
     pass

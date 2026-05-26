@@ -7,6 +7,17 @@ from src.ssl_sentinel.network import fetch_certificate_status
 
 
 def process_hostname(hostname, threshold, expiring_soon=False):
+    """
+    Process the hostname by checking its SSL certificate.
+
+    Args:
+        hostname (str): The domain name to check.
+        threshold (int): The number of days remaining to consider the certificate as expiring soon.
+        expiring_soon (bool): If True, only show certificates that are expiring soon.
+
+    Returns:
+        bool: True if the process completed successfully or with an expected error, False otherwise.
+    """
     if not hostname:
         print("Error: No hostname provided.", file=sys.stderr)
         return False
@@ -35,6 +46,9 @@ def process_hostname(hostname, threshold, expiring_soon=False):
 
 
 def main():
+    """
+    Main entry point for the ssl-sentinel CLI. Parses arguments and initiates processing.
+    """
     parser = argparse.ArgumentParser(
         description="Check the SSL certificate for a domain name.", prog="ssl-sentinel"
     )

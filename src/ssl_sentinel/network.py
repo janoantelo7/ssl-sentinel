@@ -9,6 +9,21 @@ from src.ssl_sentinel.models import CertificateStatus
 def fetch_certificate_status(
     hostname: str, threshold: int = 30, timeout: float = 0.5
 ) -> CertificateStatus:
+    """
+    Fetch and parse the SSL certificate status for a given hostname.
+
+    Args:
+        hostname (str): The domain name to fetch the certificate for.
+        threshold (int): The number of days remaining to consider the certificate as expiring soon. Default is 30.
+        timeout (float): The timeout in seconds for the socket connection. Default is 0.5.
+
+    Returns:
+        CertificateStatus: An object containing the certificate status details.
+
+    Raises:
+        CertificateFetchError: If the connection to the server fails.
+        CertificateParseError: If the server does not return a certificate or if the certificate cannot be parsed.
+    """
     context = ssl.create_default_context()
     try:
         with socket.create_connection((hostname, 443), timeout=timeout) as sock:
