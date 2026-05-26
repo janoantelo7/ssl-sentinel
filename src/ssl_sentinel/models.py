@@ -6,7 +6,7 @@ from datetime import datetime
 class CertificateStatus:
     hostname: str
     days_left: int
-    expiry_date: datetime.datetime
+    expiry_date: datetime
     threshold: int
 
     @property
