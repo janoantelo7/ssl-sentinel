@@ -1,9 +1,9 @@
 import argparse
 import sys
 
-from src.ssl_sentinel.__about__ import __version__
-from src.ssl_sentinel.exceptions import SSLSentinelError
-from src.ssl_sentinel.network import fetch_certificate_status
+from ssl_sentinel.__about__ import __version__
+from ssl_sentinel.exceptions import SSLSentinelError
+from ssl_sentinel.network import fetch_certificate_status
 
 
 def process_hostname(hostname, threshold, expiring_soon=False):

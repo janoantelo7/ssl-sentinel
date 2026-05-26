@@ -2,8 +2,8 @@ import socket
 import ssl
 from datetime import datetime
 
-from src.ssl_sentinel.exceptions import CertificateFetchError, CertificateParseError
-from src.ssl_sentinel.models import CertificateStatus
+from ssl_sentinel.exceptions import CertificateFetchError, CertificateParseError
+from ssl_sentinel.models import CertificateStatus
 
 
 def fetch_certificate_status(
