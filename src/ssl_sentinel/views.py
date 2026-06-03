@@ -16,7 +16,7 @@ def format_text(results: list[CheckResult]) -> str:
     formated_items = []
 
     for res in results:
-        if res.success:
+        if res.success and res.expiry_date is not None:
             date_str = res.expiry_date.strftime("%Y-%m-%d")
             detail = f"[{res.status}]: Expires in {res.days_left} days on {date_str}"
         else:
