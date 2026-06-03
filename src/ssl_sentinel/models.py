@@ -13,6 +13,7 @@ class CertificateStatus:
         expiry_date (datetime): The exact date and time when the certificate expires.
         threshold (int): The number of days used as a threshold to determine if the certificate is expiring soon.
     """
+
     hostname: str
     days_left: int
     expiry_date: datetime
@@ -40,3 +41,13 @@ class CertificateStatus:
             return "WARNING"
         else:
             return "OK"
+
+
+@dataclass
+class CheckResult:
+    hostname: str
+    success: bool
+    status: str
+    days_left: int | None = None
+    expiry_date: datetime | None = None
+    error: str | None = None
