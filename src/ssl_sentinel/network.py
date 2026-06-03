@@ -30,10 +30,10 @@ def fetch_certificate_status(
             with context.wrap_socket(sock, server_hostname=hostname) as ssock:
                 cert = ssock.getpeercert()
     except (OSError, ssl.SSLError, ValueError) as e:
-        raise CertificateFetchError(f"Cloud not connect to {hostname}: {e}")
+        raise CertificateFetchError(f"Could not connect to {hostname}: {e}")
 
     if not cert:
-        raise CertificateParseError("The server doesn't returned a certificate.")
+        raise CertificateParseError("The server did not return a certificate.")
 
     try:
         expiry_date_str = cert.get("notAfter")
