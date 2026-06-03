@@ -1,8 +1,18 @@
+import json
+
 from ssl_sentinel.models import CheckResult
 
 
 def format_text(results: list[CheckResult]) -> str:
+    """
+    Format a list of certificate check results as plain text.
 
+    Args:
+        results (list[CheckResult]): The list of check results.
+
+    Returns:
+        str: Plain text representation with separators.
+    """
     formated_items = []
 
     for res in results:
@@ -24,3 +34,35 @@ def format_text(results: list[CheckResult]) -> str:
         return formated_items[0]
     else:
         return ""
+
+
+def format_json(results: list[CheckResult]) -> str:
+    """
+    Format a list of certificate check results as a JSON string.
+
+    Args:
+        results (list[CheckResult]): The list of check results.
+
+    Returns:
+        str: JSON formatted string.
+    """
+    json_data = []
+
+    for res in results:
+        res_dict = {
+            "hostname": res.hostname,
+            "success": res.success,
+            "status": res.status,
+            "days_left": res.days_left,
+            "expiry_date": res.expiry_date.strftime("%Y-%m-%d")
+            if res.expiry_date
+            else None,
+            "error": res.error,
+        }
+
+        json_data.append(res_dict)
+
+    return json.dumps(json_data, indent=2)
+
+
+FORMATTERS = {"text": format_text, "json": format_json}

@@ -45,6 +45,18 @@ class CertificateStatus:
 
 @dataclass
 class CheckResult:
+    """
+    Data class to represent the final status of checking a certificate.
+
+    Attributes:
+        hostname (str): The domain name that was checked.
+        success (bool): Whether the certificate check succeeded.
+        status (str): The check status ("OK", "WARNING", or "ERROR").
+        days_left (int | None): Days remaining until expiration, or None if check failed.
+        expiry_date (datetime | None): Expiration date/time, or None if check failed.
+        error (str | None): The exception error message if the check failed.
+    """
+
     hostname: str
     success: bool
     status: str

@@ -3,46 +3,36 @@ import sys
 
 from ssl_sentinel.__about__ import __version__
 from ssl_sentinel.exceptions import SSLSentinelError
+from ssl_sentinel.models import CheckResult
 from ssl_sentinel.network import fetch_certificate_status
+from ssl_sentinel.views import FORMATTERS
 
 
-def process_hostname(hostname, threshold, expiring_soon=False):
+def check_hostname(hostname: str, threshold: int) -> CheckResult:
     """
-    Process the hostname by checking its SSL certificate.
+    Check the SSL certificate status for a given hostname.
 
     Args:
         hostname (str): The domain name to check.
-        threshold (int): The number of days remaining to consider the certificate as expiring soon.
-        expiring_soon (bool): If True, only show certificates that are expiring soon.
+        threshold (int): The number of days remaining to consider a certificate expiring soon.
 
     Returns:
-        bool: True if the process completed successfully or with an expected error, False otherwise.
+        CheckResult: The structured outcome of the certificate check (success or failure).
     """
-    if not hostname:
-        print("Error: No hostname provided.", file=sys.stderr)
-        return False
-
     try:
-        certificate = fetch_certificate_status(hostname, threshold)
-
-        if expiring_soon and not certificate.is_expiring_soon:
-            return False
-
-        print(f"--> Checking certificate for {hostname}")
-        date_formated = certificate.expiry_date.strftime("%Y-%m-%d")
-        days = certificate.days_left
-
-        print(
-            f"[{certificate.status_label}]: Expires in {days} days on {date_formated}"
+        certificate = fetch_certificate_status(hostname=hostname, threshold=threshold)
+        return CheckResult(
+            hostname=hostname,
+            success=True,
+            status=certificate.status_label,
+            days_left=certificate.days_left,
+            expiry_date=certificate.expiry_date,
         )
 
-        return True
     except SSLSentinelError as e:
-        print(f"--> Checking certificate for {hostname}")
-        print(
-            f"[ERROR]: error checking certificate for {hostname}: {e}.", file=sys.stderr
+        return CheckResult(
+            hostname=hostname, success=False, status="ERROR", error=str(e)
         )
-        return True
 
 
 def main():
@@ -71,6 +61,8 @@ def main():
         help='Set the number of days to consider a certificate as "expiring soon" (default: 30 days)',
     )
 
+    parser.add_argument("--format", choices=list(FORMATTERS.keys()), default="text")
+
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
         "-H",
@@ -89,8 +81,10 @@ def main():
 
     args = parser.parse_args()
 
+    results = []
+
     if args.hostname:
-        process_hostname(args.hostname, args.threshold)
+        results.append(check_hostname(args.hostname, args.threshold))
     elif args.file:
         try:
             with open(args.file, "r") as f:
@@ -101,13 +95,9 @@ def main():
                         # Skip empty lines or commented lines
                         continue
 
-                    output = process_hostname(
-                        hostname, args.threshold, expiring_soon=args.expiring_soon
+                    results.append(
+                        check_hostname(hostname=hostname, threshold=args.threshold)
                     )
-
-                    # Print separator only if there was output for the previous hostname
-                    if output:
-                        print("--" * 30)
 
         except FileNotFoundError:
             print(f"Error: The file '{args.file}' was not found.", file=sys.stderr)
@@ -116,7 +106,17 @@ def main():
         hostname = input(
             "Enter the domain name to check the SSL certificate for: "
         ).strip()
-        process_hostname(hostname, args.threshold)
+        results.append(check_hostname(hostname, args.threshold))
+
+    if args.expiring_soon:
+        results = [res for res in results if res.status != "OK"]
+
+    formater = FORMATTERS[args.format]
+
+    output = formater(results)
+
+    if output:
+        print(output)
 
 
 if __name__ == "__main__":
