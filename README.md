@@ -42,12 +42,28 @@ Add the `-t` flag to change the threshold.
 ssl-sentinel --file domains.txt --expiring-soon -t 60
 ```
 
+### Output Formatting
+
+By default, the output is in plain text. You can change this to JSON using the `--format` option.
+
+```bash
+ssl-sentinel --hostname google.com --format json
+```
+
 ### Interactive Mode
 
 If you run the command without any arguments, it will prompt you to enter a domain name.
 
 ```bash
 ssl-sentinel
+```
+
+### Check Version
+
+To check the installed version of `ssl-sentinel`, use the `-V` or `--version` flag.
+
+```bash
+ssl-sentinel --version
 ```
 
 ## License
