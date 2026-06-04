@@ -1,9 +1,29 @@
 import socket
 import ssl
-from datetime import datetime
+from datetime import datetime, timezone
+from urllib.parse import urlparse
 
 from ssl_sentinel.exceptions import CertificateFetchError, CertificateParseError
 from ssl_sentinel.models import CertificateStatus
+
+
+def parse_url_or_host(target: str) -> tuple[str, int]:
+    """
+
+    Return:
+        tuple
+    """
+    target = target.strip()
+
+    if "://" not in target:
+        parsed = urlparse("https://" + target)
+    else:
+        parsed = urlparse(target)
+
+    clean_hostname = parsed.hostname or target
+    port = parsed.port if parsed.port is not None else 443
+
+    return clean_hostname, port
 
 
 def fetch_certificate_status(
@@ -24,13 +44,16 @@ def fetch_certificate_status(
         CertificateFetchError: If the connection to the server fails.
         CertificateParseError: If the server does not return a certificate or if the certificate cannot be parsed.
     """
+
+    clean_hostname, port = parse_url_or_host(hostname)
+
     context = ssl.create_default_context()
     try:
-        with socket.create_connection((hostname, 443), timeout=timeout) as sock:
-            with context.wrap_socket(sock, server_hostname=hostname) as ssock:
+        with socket.create_connection((clean_hostname, port), timeout=timeout) as sock:
+            with context.wrap_socket(sock, server_hostname=clean_hostname) as ssock:
                 cert = ssock.getpeercert()
     except (OSError, ssl.SSLError, ValueError) as e:
-        raise CertificateFetchError(f"Could not connect to {hostname}: {e}")
+        raise CertificateFetchError(f"Could not connect to {clean_hostname}: {e}")
 
     if not cert:
         raise CertificateParseError("The server did not return a certificate.")
@@ -45,7 +68,9 @@ def fetch_certificate_status(
             f"Issue analyzing the certificate for {hostname}: {e}"
         )
 
-    days_left = (expiry_date - datetime.now()).days
+    now_utc = datetime.now(timezone.utc).replace(tzinfo=None)
+
+    days_left = (expiry_date - now_utc).days
 
     return CertificateStatus(
         hostname=hostname,

@@ -103,9 +103,15 @@ def main():
             print(f"Error: The file '{args.file}' was not found.", file=sys.stderr)
             sys.exit(1)
     else:
-        hostname = input(
-            "Enter the domain name to check the SSL certificate for: "
-        ).strip()
+        while True:
+            hostname = input(
+                "Enter the domain name to check the SSL certificate for: "
+            ).strip()
+            if hostname or hostname != "":
+                break
+            else:
+                print("\n[ERROR]: The hostname can not be empty or a white space.")
+
         results.append(check_hostname(hostname, args.threshold))
 
     if args.expiring_soon:
