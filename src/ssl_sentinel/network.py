@@ -9,9 +9,14 @@ from ssl_sentinel.models import CertificateStatus
 
 def parse_url_or_host(target: str) -> tuple[str, int]:
     """
+    Parse a target string that can be a hostname or a full URL to extract
+    the clean hostname and the port.
 
-    Return:
-        tuple
+    Args:
+        target (str): The input string to parse (e.g. 'example.com', 'https://example.com:8443').
+
+    Returns:
+        tuple[str, int]: A tuple containing the clean hostname (str) and the port (int).
     """
     target = target.strip()
 
